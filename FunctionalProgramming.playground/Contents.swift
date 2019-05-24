@@ -5,13 +5,10 @@ import Foundation
 //1.Evaluation Strategy
 //All the evaluation does is reducing an expression to a value
 //Can express every algorithm (if not side effect) -> example C++ (has a side effect on the variable c so can't be express as substitution we need a store)
-
-
 //call-by-value -> first resolve arguments then function <- this is used by default
-
 //call-by-name -> first resolve function then arguments <- Autoclosure
-
 //http://www.russbishop.net/swift-call-by-name
+
 let square: (Double) -> Double = { $0 * $0 }
 square(2.0)
 
@@ -120,4 +117,30 @@ func pascalTriangle(col: Int, row: Int) -> Int {
     return triangle(col: col, row: row)
 }
 pascalTriangle(col: 2, row: 4)
+
+func balance(chars: String) -> Bool {
+    func balanceIter(chars: String.SubSequence, count: Int) -> Bool {
+        if chars.isEmpty { //stop if it's empty and return true if balanced
+            return count == 0
+        } else if chars.first! == "(" { //if open parathesis increase count and continue
+            return balanceIter(chars: chars.dropFirst(), count: count + 1)
+        } else if chars.first! == ")" { //if close parathesis check if we have an open count (it means we are expecting a close brace) decrese the count and continue
+            return count > 0 && balanceIter(chars: chars.dropFirst(), count: count - 1)
+        } else { //just continue
+            return balanceIter(chars: chars.dropFirst(), count: count)
+        }
+    }
+    return balanceIter(chars: chars[chars.startIndex..<chars.endIndex], count: 0)
+}
+
+balance(chars:"(if (zero? x) max (/ 1 x))") //true
+balance(chars: "I told him (that it’s not (yet) done). (But he wasn’t listening)") //true
+balance(chars: ":-)") //false
+balance(chars: "())(") //false
+
+func countChange(money: Int, coins: [Int]) -> Int {
+    //TODO: Implement
+    fatalError()
+}
+
 
