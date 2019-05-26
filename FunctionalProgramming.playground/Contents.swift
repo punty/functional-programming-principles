@@ -1,91 +1,112 @@
 import Foundation
-
-//Functional Programming Principles in Swift
-
-//1.Evaluation Strategy
-//All the evaluation does is reducing an expression to a value
-//Can express every algorithm (if not side effect) -> example C++ (has a side effect on the variable c so can't be express as substitution we need a store)
-//call-by-value -> first resolve arguments then function <- this is used by default
-//call-by-name -> first resolve function then arguments <- Autoclosure
-//http://www.russbishop.net/swift-call-by-name
-
-let square: (Double) -> Double = { $0 * $0 }
-square(2.0)
-
-let sumOfSquare: (Double, Double) -> Double  = {
-    return square($0) + square($1)
-}
-
-//substitution model
-sumOfSquare(3, 2+2)
-sumOfSquare(3, 4)
-square(3) + square(4)
-3 * 3 + square(4)
-9 + square(4)
-9 + 4 * 4
-9 + 16
-25
-
-//Lambda calculs
-
-//Tail recursion
-
-func sqrt(x: Double, guess: Double) -> Double {
-    func isGuessValid(_ guess: Double) -> Bool {
-        return abs(x * x - guess) / x < 0.001
+/*:
+ # Functional Programming Principles in Swift
+ ## Substitution model
+ The idea underlying this model is that all evaluation does is reduce an expression to a value.
+ Program expressions are evaluated in the same way we would evaluate a mathematical expression It can be applied to all expressions, as long as they have no side effects.
+ 
+ ## Expression Evaluation
+ 1. Take the operator with highest precedence.
+ 2. Evaluate its operands from left to right.
+ 3. Apply the operator to operand values
+Example Expression Evaluation
+ */
+    let pi = 3.14159
+    let radius = 10.0
+    (2 * pi) * radius
+    (2 * 3.14159) * radius
+    6.28318 * radius
+    6.28318 * 10
+    62.8318
+/*:
+ ## Function Evaluation
+ ## call-by-value
+ first resolve arguments then function. This is used by default parameters to a function call are evaluated in the caller's context then copied to the callee. That's call-by-value because the only thing the callee gets is a copy of the value; any changes are local to the callee only. This is very restricting so call-by-reference has being introduced (so the pointer is copied but the referenced variable is available and it's possible to modify)
+ ## call-by-name
+ first resolve function then arguments, the the parameters aren't evaluated at call time, they are substituted into the callee instead.
+ */
+    let square: (Double) -> Double = { $0 * $0 }
+    square(2.0)
+    let sumOfSquares: (Double, Double) -> Double  = {
+        return square($0) + square($1)
     }
-    
-    func improveGuess(_ guess: Double) -> Double {
-        return (guess + x / guess) / 2.0
-    }
-    
-    func sqrtIter(_ guess: Double) -> Double {
-        if isGuessValid(guess) {
-            return guess
-        } else {
-            return sqrtIter(improveGuess(guess))
+/*:
+Call-by-value Example
+ */
+    sumOfSquares(3, 2+2)
+    sumOfSquares(3, 4)
+    square(3) + square(4)
+    3 * 3 + square(4)
+    9 + square(4)
+    9 + 4 * 4
+    9 + 16
+    25
+
+/*:
+Call-by-name Example
+*/
+    sumOfSquares(3, 2+2)
+    square(3) + square(2+2)
+    3 * 3 + square(2+2)
+    9 + square(2+2)
+    9 + (2+2) * (2+2)
+    9 + 4 * (2+2)
+    9+4*4
+    25
+
+/*:
+ ## Interestring properties:
+ * call-by-name and call-by-value evaluation strategies reduce an expression to the same value, as long as both evaluations terminate
+ * If call-by-value evaluation of an expression terminates, then call-by-name evaluation of e terminates, too. (the opposite is not always true)
+*/
+/*:
+ ## Recursion
+ First recursion example
+ */
+    func sqrt(x: Double, guess: Double) -> Double {
+        func isGuessValid(_ guess: Double) -> Bool {
+            return abs(x * x - guess) / x < 0.001
         }
+        func improveGuess(_ guess: Double) -> Double {
+            return (guess + x / guess) / 2.0
+        }
+        func sqrtIter(_ guess: Double) -> Double {
+            if isGuessValid(guess) {
+                return guess
+            } else {
+                return sqrtIter(improveGuess(guess))
+            }
+        }
+        return sqrtIter(1.0)
     }
-    return sqrtIter(1.0)
-}
+    sqrt(10)
 
-sqrt(10)
-
-//Functional form of a loop (Tail Recursion)
-func gcd(_ a: Int, _ b: Int) -> Int {
-    return b == 0 ? a: gcd(b,a % b)
-}
-
-//Evaluation
-gcd(14,21)
-gcd(14,21)
-gcd(21, 14)
-gcd(14, 7)
-gcd(7, 0)
-7
-
-func factorial(_ n: Int) -> Int {
-    precondition(n >= 0)
-    if n == 0 {
-        return 1
+/*:
+Factorial not tail recursion
+ */
+    func factorial(_ n: Int) -> Int {
+        precondition(n >= 0)
+        if n == 0 {
+            return 1
+        }
+        
+        return n * factorial(n - 1)
     }
-    
-    return n * factorial(n - 1)
-}
 
-factorial(4)
-
-//Evaluation
-factorial (4)
-4 * factorial(3)
-4 * (3 * factorial(2))
-4 * (3 * (2 * factorial(1)))
-4 * (3 * (2 * (1 * factorial(0))))
-4 * (3 * (2 * (1 * 1)))
-24
-
-func factorialTailRec(_ n: Int) -> Int {
-    precondition(n >= 0)
+    factorial(4)
+/*:
+ Factorial not tail recursion Evaluation
+*/
+    factorial (4)
+    4 * factorial(3)
+    4 * (3 * factorial(2))
+    4 * (3 * (2 * factorial(1)))
+    4 * (3 * (2 * (1 * factorial(0))))
+    4 * (3 * (2 * (1 * 1)))
+    24
+/*:
+ Factorial tail recursion
+ */
     func factorialIter(_ n: Int, _ acc: Int) -> Int {
         if n == 0 {
             return acc
@@ -93,18 +114,22 @@ func factorialTailRec(_ n: Int) -> Int {
             return factorialIter(n-1, acc * n)
         }
     }
-    return factorialIter(n, 1)
-}
-factorialTailRec(4)
 
-/*
-    1
-   1 1
-  1 2 1
- 1 3 3 1
-1 4 6 4 1
-*/
+    func factorialTailRec(_ n: Int) -> Int {
+        precondition(n >= 0)
+        return factorialIter(n, 1)
+    }
 
+    factorialIter (4, 1)
+    factorialIter (3, 4)
+    factorialIter (2, 12)
+    factorialIter (1, 24)
+    24
+/*:
+ Exercise 1:
+ Write a function that computes the elements of Pascal’s triangle by means of a recursive process.  
+ ![Pascal Triangle](pascal.png)
+ */
 func pascalTriangle(col: Int, row: Int) -> Int {
     func triangle(col: Int, row: Int) -> Int {
         precondition(row >= 0 && col >= 0 && col <= row)
@@ -117,7 +142,10 @@ func pascalTriangle(col: Int, row: Int) -> Int {
     return triangle(col: col, row: row)
 }
 pascalTriangle(col: 2, row: 4)
-
+pascalTriangle(col: 4, row: 5)
+/*:
+ Write a recursive function which verifies the balancing of parentheses in a string
+ */
 func balance(chars: String) -> Bool {
     func balanceIter(chars: String.SubSequence, count: Int) -> Bool {
         if chars.isEmpty { //stop if it's empty and return true if balanced
@@ -132,15 +160,25 @@ func balance(chars: String) -> Bool {
     }
     return balanceIter(chars: chars[chars.startIndex..<chars.endIndex], count: 0)
 }
-
 balance(chars:"(if (zero? x) max (/ 1 x))") //true
 balance(chars: "I told him (that it’s not (yet) done). (But he wasn’t listening)") //true
 balance(chars: ":-)") //false
 balance(chars: "())(") //false
-
+/*:
+ Write a recursive function that counts how many different ways you can make change for an amount, given a list of coin denominations. For example, there are 3 ways to give change for 4 if you have coins with denomination 1 and 2: 1+1+1+1, 1+1+2, 2+2.
+ */
 func countChange(money: Int, coins: [Int]) -> Int {
-    //TODO: Implement
-    fatalError()
+    func countChangeIter(money: Int, coins: ArraySlice<Int>) -> Int {
+        if money < 0 || coins.isEmpty { //we have no coin left or we have negative money just return 0
+            return 0
+        } else if (money == 0) { //base case, return 1 because we have one way to return this money gived the coin value
+            return 1
+        } else { //we iterate, get the first coin value and remove from money value + all the other combination
+            return countChangeIter(money: money - coins.first!, coins: coins) + countChangeIter(money: money, coins: coins.dropFirst())
+        }
+    }
+    return countChangeIter(money: money, coins: coins[coins.startIndex..<coins.endIndex])
 }
+countChange(money: 10, coins: [1,2,3,4,5])
 
 
