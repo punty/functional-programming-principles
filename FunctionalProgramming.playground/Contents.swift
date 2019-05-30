@@ -182,3 +182,80 @@ func countChange(money: Int, coins: [Int]) -> Int {
 countChange(money: 10, coins: [1,2,3,4,5])
 
 
+//Week 2
+struct Rational {
+    
+    private static func gcd(_ a: Int, _ b: Int) -> Int {
+        func gcdIter (a: Int, b: Int) -> Int {
+            if (b == 0) {
+                return a
+            } else {
+                return gcdIter(a: b, b: a % b)
+            }
+        }
+        return gcdIter(a: a, b: b)
+    }
+    
+    let numer: Int
+    let denom: Int
+    
+    init(numer: Int, denom: Int) {
+        precondition(denom>0, "denominator must be positive")
+        let g = Rational.gcd(numer, denom)
+        self.numer = numer/g
+        self.denom = denom/g
+    }
+    
+    func add(_ toAdd: Rational) -> Rational {
+        return Rational (numer: numer * toAdd.denom + toAdd.numer * denom,
+                         denom: denom * toAdd.denom)
+    }
+    
+    var neg: Rational {
+        return Rational(numer: -numer, denom: denom)
+    }
+    
+    func sub(_ toSub: Rational) -> Rational {
+        return add(toSub.neg)
+    }
+    
+    func less(than: Rational) -> Bool {
+        return numer * than.denom < than.numer * denom
+    }
+    
+    func max(than: Rational) -> Rational {
+       let max = (less(than: than)) ? than : self
+       return max
+    }
+}
+
+extension Rational: CustomStringConvertible {
+    var description: String {
+        return "\(numer) / \(denom)"
+    }
+}
+
+let x = Rational(numer: 1, denom: 3)
+let y = Rational(numer: 5, denom: 7)
+let z = Rational(numer: 3, denom: 2)
+
+y.add(y)
+x.less(than: y)
+x.max(than: y)
+
+typealias CharacteristicSet = (Int) -> Bool
+
+func contains(s: CharacteristicSet, element: Int) -> Bool {
+    return s(element)
+}
+
+func singletonSet(element: Int) -> CharacteristicSet {
+    return { $0 == element }
+}
+
+func union(s: @escaping CharacteristicSet, t: @escaping CharacteristicSet) -> CharacteristicSet {
+    return {
+        s($0) || t($0)
+    }
+}
+
