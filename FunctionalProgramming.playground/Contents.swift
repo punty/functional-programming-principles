@@ -200,7 +200,7 @@ struct Rational {
     let denom: Int
     
     init(numer: Int, denom: Int) {
-        precondition(denom>0, "denominator must be positive")
+        precondition(denom != 0, "denominator must be positive")
         let g = Rational.gcd(numer, denom)
         self.numer = numer/g
         self.denom = denom/g
@@ -235,17 +235,37 @@ extension Rational: CustomStringConvertible {
     }
 }
 
-let x = Rational(numer: 1, denom: 3)
-let y = Rational(numer: 5, denom: 7)
-let z = Rational(numer: 3, denom: 2)
+extension Rational: AdditiveArithmetic {
+    static func - (lhs: Rational, rhs: Rational) -> Rational {
+        return lhs.sub(rhs)
+    }
+    
+    static func += (lhs: inout Rational, rhs: Rational) {
+        lhs = lhs.add(rhs)
+    }
+    
+    static func + (lhs: Rational, rhs: Rational) -> Rational {
+        return lhs.add(rhs)
+    }
+    
+    static var zero: Rational {
+       return Rational(numer: 0, denom: 1)
+    }
+    
+    static func -= (lhs: inout Rational, rhs: Rational) {
+        lhs = lhs.sub(rhs)
+    }
+}
 
-y.add(y)
-x.less(than: y)
-x.max(than: y)
+let x = Rational(numer: 3, denom: 3)
+let y = Rational(numer: 1, denom: 3)
+let z = Rational(numer: 2, denom: 3)
+
+let c = x - y - z
 
 typealias CharacteristicSet = (Int) -> Bool
 
-func contains(s: CharacteristicSet, element: Int) -> Bool {
+func contains(_ s: CharacteristicSet, element: Int) -> Bool {
     return s(element)
 }
 
@@ -253,9 +273,32 @@ func singletonSet(element: Int) -> CharacteristicSet {
     return { $0 == element }
 }
 
-func union(s: @escaping CharacteristicSet, t: @escaping CharacteristicSet) -> CharacteristicSet {
+func union(_ s: @escaping CharacteristicSet, _ t: @escaping CharacteristicSet) -> CharacteristicSet {
     return {
-        s($0) || t($0)
+        contains(s, element: $0) || contains(t, element: $0)
     }
 }
 
+func intersect(_ s: @escaping CharacteristicSet, _ t: @escaping CharacteristicSet) -> CharacteristicSet {
+    return {
+        contains(s, element: $0) && contains(t, element: $0)
+    }
+}
+func diff(_ s: @escaping CharacteristicSet, _ t: @escaping CharacteristicSet) -> CharacteristicSet {
+    return {
+        contains(s, element: $0) && !contains(t, element: $0)
+    }
+}
+
+func filter(_ s: @escaping CharacteristicSet, predicate: @escaping (Int) -> Bool) -> CharacteristicSet {
+    return intersect(s, predicate)
+}
+
+let a = singletonSet(element: 4)
+let v = singletonSet(element: 5)
+union(a, v)
+
+//TODO
+final class Boolean {
+    
+}
