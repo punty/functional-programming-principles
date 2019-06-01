@@ -141,8 +141,6 @@ func pascalTriangle(col: Int, row: Int) -> Int {
     }
     return triangle(col: col, row: row)
 }
-pascalTriangle(col: 2, row: 4)
-pascalTriangle(col: 4, row: 5)
 /*:
  Write a recursive function which verifies the balancing of parentheses in a string
  */
@@ -182,7 +180,8 @@ func countChange(money: Int, coins: [Int]) -> Int {
 countChange(money: 10, coins: [1,2,3,4,5])
 
 
-//Week 2
+//Week 2 examples
+
 struct Rational {
     
     private static func gcd(_ a: Int, _ b: Int) -> Int {
@@ -259,44 +258,69 @@ extension Rational: AdditiveArithmetic {
 
 let x = Rational(numer: 3, denom: 3)
 let y = Rational(numer: 1, denom: 3)
-let z = Rational(numer: 2, denom: 3)
+let z = Rational(numer: 4, denom: 3)
 
 let c = x - y - z
 
-typealias CharacteristicSet = (Int) -> Bool
 
-func contains(_ s: CharacteristicSet, element: Int) -> Bool {
+
+//Week 2 Exercises
+
+typealias Set = (Int) -> Bool
+
+func contains(_ s: Set, element: Int) -> Bool {
     return s(element)
 }
 
-func singletonSet(element: Int) -> CharacteristicSet {
+func singletonSet(element: Int) -> Set {
     return { $0 == element }
 }
 
-func union(_ s: @escaping CharacteristicSet, _ t: @escaping CharacteristicSet) -> CharacteristicSet {
+func union(_ s: @escaping Set, _ t: @escaping Set) -> Set {
     return {
         contains(s, element: $0) || contains(t, element: $0)
     }
 }
 
-func intersect(_ s: @escaping CharacteristicSet, _ t: @escaping CharacteristicSet) -> CharacteristicSet {
+func intersect(_ s: @escaping Set, _ t: @escaping Set) -> Set {
     return {
         contains(s, element: $0) && contains(t, element: $0)
     }
 }
-func diff(_ s: @escaping CharacteristicSet, _ t: @escaping CharacteristicSet) -> CharacteristicSet {
+func diff(_ s: @escaping Set, _ t: @escaping Set) -> Set {
     return {
         contains(s, element: $0) && !contains(t, element: $0)
     }
 }
 
-func filter(_ s: @escaping CharacteristicSet, predicate: @escaping (Int) -> Bool) -> CharacteristicSet {
+func filter(_ s: @escaping Set, predicate: @escaping (Int) -> Bool) -> Set {
     return intersect(s, predicate)
 }
+let bound = 1000
 
-let a = singletonSet(element: 4)
-let v = singletonSet(element: 5)
-union(a, v)
+func forAll(_ s:  @escaping Set, predicate: @escaping (Int) -> Bool) -> Bool {
+    func iter(_ a: Int) -> Bool {
+        if a > bound {
+            return true
+        } else if (s(a) && !predicate(a)) {
+            return false
+        } else {
+            return iter(a + 1)
+        }
+    }
+    return iter(-bound)
+}
+
+func exist(_ s:  @escaping Set, predicate: @escaping (Int) -> Bool) -> Bool {
+    return !forAll(s, predicate: { el -> Bool in
+        return !predicate(el)
+    })
+}
+
+func map (_ s: @escaping Set, transform: @escaping (Int) -> Int) -> Set {
+    return { el in exist(s, predicate: { el == transform ($0)})}
+}
+
 
 //TODO
 final class Boolean {
